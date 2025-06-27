@@ -17,16 +17,21 @@ export default function BlogPostPage({ post }: BlogPostPageProps) {
 
   return (
     <>
+    <section className='relative min-h-screen flex flex-col overflow-hidden items-center justify-center text-center px-6 text-white'>
+      <Image 
+        src={post.image}
+        alt={post.title}
+        fill
+        style={{ objectPosition: "center", objectFit: "cover" }}
+        />
+        <div className="z-10">
+          <h1 className="text-4xl md:text-6xl font-bold">{post.title}</h1>
+          <p className="text-lg md:text-2xl mt-4">{post.tags}</p>
+        </div>
+    </section>
       <main className="max-w-4xl mx-auto px-4 py-10">
         <article className="bg-white rounded-2xl shadow-md overflow-hidden">
-          <Image
-            src={post.image}
-            alt={post.title}
-            fill
-            className="w-full h-64 object-cover rounded-t-2xl"
-          />
           <div className="p-6">
-            <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
             <div className="text-sm text-gray-500 mb-6">
               By <span className="font-semibold">{post.author}</span> • {post.publish_date}
             </div>
