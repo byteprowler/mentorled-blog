@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { BlogPost } from '../types/BlogProps';
 
@@ -10,16 +10,18 @@ interface BlogViewerProps {
 
 const LETTER_DELAY = 0.050;
 const BOX_FADE_DURATION = 0.25;
-
 const SWAP_DELAY_IN_MS = 50000;
 
-const Typewrite = ({ examples }) => {
-  const [restartKey, setRestartKey] = useState(0);
-  const current = examples[restartKey % examples.length];
+interface TypewriteProps {
+  text: string;
+}
 
+const Typewrite = ({ text }: TypewriteProps) => {
+  const [restartKey, setRestartKey] = useState(0);
+  
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setRestartKey((prev) => prev + 1); // re-trigger animation
+      setRestartKey((prev) => prev + 1);
     }, SWAP_DELAY_IN_MS);
 
     return () => clearInterval(intervalId);
@@ -30,24 +32,24 @@ const Typewrite = ({ examples }) => {
       <span className="inline-block size-2 rounded-md bg-neutral-950" />
       <span className="ml-2">
         Description:{" "}
-        {current.split("").map((l, i) => (
+        {text.split("").map((letter, index) => (
           <motion.span
-            key={`${restartKey}-${i}`} // force restart on key change
+            key={`${restartKey}-${index}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{
-              delay: i * LETTER_DELAY,
+              delay: index * LETTER_DELAY,
               duration: 0,
             }}
             className="relative"
           >
-            {l}
+            {letter}
             <motion.span
               className="absolute bottom-[3px] left-[1px] right-0 top-[3px] bg-neutral-950"
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 1, 0] }}
               transition={{
-                delay: i * LETTER_DELAY,
+                delay: index * LETTER_DELAY,
                 times: [0, 0.1, 1],
                 duration: BOX_FADE_DURATION,
                 ease: "easeInOut",
@@ -67,6 +69,7 @@ export default function BlogViewer({ filteredBlogs }: BlogViewerProps) {
         <Link 
           key={blog.id}
           href={`/${blog.slug}`}
+          passHref
         >
           <motion.div
             className="block"
@@ -88,6 +91,7 @@ export default function BlogViewer({ filteredBlogs }: BlogViewerProps) {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={false}
                 />
               </div>
               <div className="p-4 flex-grow flex flex-col">
@@ -99,8 +103,9 @@ export default function BlogViewer({ filteredBlogs }: BlogViewerProps) {
                     {new Date(blog.publish_date).toLocaleDateString()}
                   </span>
                 </div>
+                
                 <h3 className="text-xl font-bold mb-2 line-clamp-2">{blog.title}</h3>
-                <Typewrite examples={blog.excerpt} />
+                <Typewrite text={blog.excerpt} />
                 <div className="flex flex-wrap gap-1 mb-3">
                   {blog.tags.slice(0, 3).map(tag => (
                     <span key={tag} className="text-xs px-2 py-1 bg-gray-100 rounded-full">

@@ -1,36 +1,61 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { useRouter } from 'next/router';
 import blogData from '../data/blogData.json';
-import { BlogPost } from '../types/blog';
+import { BlogPost } from '../types/BlogProps';
+import Image from 'next/image';
 
 interface BlogPostPageProps {
   post: BlogPost;
 }
 
 export default function BlogPostPage({ post }: BlogPostPageProps) {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div className="text-center py-20 text-gray-500">Loading post...</div>;
+  }
+
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
-      <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Your detailed blog post layout */}
-        <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-        {/* Rest of your content */}
-      </article>
-    </div>
+    <>
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        <article className="bg-white rounded-2xl shadow-md overflow-hidden">
+          <Image
+            src={post.image}
+            alt={post.title}
+            fill
+            className="w-full h-64 object-cover rounded-t-2xl"
+          />
+          <div className="p-6">
+            <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+            <div className="text-sm text-gray-500 mb-6">
+              By <span className="font-semibold">{post.author}</span> • {post.publish_date}
+            </div>
+
+            {/* BLOG BODY */}
+            <div
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          </div>
+        </article>
+      </main>
+    </>
   );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = blogData.map(post => ({
+  const paths = blogData.map((post) => ({
     params: { slug: post.slug },
   }));
 
   return {
     paths,
-    fallback: false,
+    fallback: true, // allows fallback loader
   };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const post = blogData.find(post => post.slug === params?.slug);
+  const post = blogData.find((p) => p.slug === params?.slug);
 
   if (!post) {
     return {
